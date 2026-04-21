@@ -1,0 +1,19 @@
+{
+  "name": "obsidian-share-clean-text",
+  "version": "0.1.0",
+  "description": "Clean Markdown into readable text, then share or copy it for external TTS apps.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "builtin-modules": "3.3.0",
+    "esbuild": "^0.25.8",
+    "obsidian": "^1.8.7",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3"
+  }
+}

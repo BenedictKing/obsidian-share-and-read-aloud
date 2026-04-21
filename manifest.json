@@ -1,0 +1,9 @@
+{
+  "id": "share-clean-text",
+  "name": "Share Clean Text",
+  "version": "0.1.0",
+  "minAppVersion": "1.7.0",
+  "description": "Clean Markdown into readable text, then share or copy it for external TTS apps.",
+  "author": "Claude Code",
+  "isDesktopOnly": false
+}
