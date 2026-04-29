@@ -175,10 +175,10 @@ export function buildCacheKey(
   model: string,
   voice: string,
   styleInstruction: string,
-  format: string
+  format: string,
+  endpoint: string
 ): string {
-  // Simple hash: model + voice + format + text hash
-  const raw = `${model}|${voice}|${styleInstruction}|${format}|${text}`;
+  const raw = `${endpoint}|${model}|${voice}|${styleInstruction}|${format}|${text}`;
   return simpleHash(raw);
 }
 

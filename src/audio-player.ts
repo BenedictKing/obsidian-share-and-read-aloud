@@ -4,7 +4,7 @@ import type { MimoTtsClient } from "./tts-client";
 import type { AudioCache } from "./audio-cache";
 import { buildCacheKey } from "./audio-cache";
 import type { MimoTtsSettings } from "./settings";
-import { MIMO_MODELS, PRESET_VOICES, DEFAULT_PREFETCH_COUNT } from "./constants";
+import { MIMO_MODELS, PRESET_VOICES, DEFAULT_PREFETCH_COUNT, buildMimoTtsEndpoint } from "./constants";
 
 export type PlayerState = "idle" | "playing" | "paused" | "stopped";
 
@@ -331,7 +331,8 @@ export class AudioPlayer {
       this.settings.model,
       voice,
       this.settings.styleInstruction,
-      "wav"
+      "wav",
+      buildMimoTtsEndpoint(this.settings.apiBase)
     );
   }
 }

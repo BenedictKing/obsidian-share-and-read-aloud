@@ -1,4 +1,4 @@
-import { MIMO_TTS_ENDPOINT, type MimoModel } from "./constants";
+import { buildMimoTtsEndpoint, type MimoModel } from "./constants";
 import type { MimoTtsSettings } from "./settings";
 
 export interface TtsRequestOptions {
@@ -71,7 +71,8 @@ export class MimoTtsClient {
       audio: audioConfig,
     });
 
-    const response = await fetch(MIMO_TTS_ENDPOINT, {
+    const endpoint = buildMimoTtsEndpoint(this.settings.apiBase);
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

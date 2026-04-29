@@ -1,6 +1,29 @@
 // API configuration
-export const MIMO_API_BASE = "https://api.xiaomimimo.com/v1";
-export const MIMO_TTS_ENDPOINT = `${MIMO_API_BASE}/chat/completions`;
+export const MIMO_API_BASE = "https://token-plan-sgp.xiaomimimo.com/v1";
+export const MIMO_TTS_PATH = "/chat/completions";
+
+export function normalizeMimoApiBase(apiBase?: string): string {
+  let normalized = (apiBase || MIMO_API_BASE).trim();
+  if (!normalized) normalized = MIMO_API_BASE;
+  normalized = normalized.replace(/\/+$/, "");
+  if (normalized.endsWith(MIMO_TTS_PATH)) {
+    normalized = normalized.slice(0, -MIMO_TTS_PATH.length).replace(/\/+$/, "");
+  }
+
+  try {
+    const url = new URL(normalized);
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      throw new Error("invalid protocol");
+    }
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    throw new Error("Invalid MiMo API Base URL. Please enter a valid URL such as https://token-plan-sgp.xiaomimimo.com/v1.");
+  }
+}
+
+export function buildMimoTtsEndpoint(apiBase?: string): string {
+  return `${normalizeMimoApiBase(apiBase)}${MIMO_TTS_PATH}`;
+}
 
 // Models
 export type MimoModel =

@@ -5,8 +5,12 @@
 ## Endpoint
 
 ```
-POST https://api.xiaomimimo.com/v1/chat/completions
+POST https://token-plan-sgp.xiaomimimo.com/v1/chat/completions
 ```
+
+For token-plan API keys with the `tp-` prefix, use the token-plan regional endpoint above. The generic OpenAI-compatible endpoint is `https://api.xiaomimimo.com/v1/chat/completions`.
+
+In plugin settings, set **API Base URL** to the base path only, for example `https://token-plan-sgp.xiaomimimo.com/v1`. The plugin appends `/chat/completions` automatically.
 
 ## Authentication
 

@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type ShareCleanTextPlugin from "./main";
 import {
+  MIMO_API_BASE,
   MIMO_MODELS,
   PRESET_VOICES,
   PLAYBACK_SPEEDS,
@@ -13,6 +14,7 @@ import {
 
 export interface MimoTtsSettings {
   apiKey: string;
+  apiBase: string;
   model: MimoModel;
   presetVoice: string;
   voiceDesignPrompt: string;
@@ -29,6 +31,7 @@ export interface MimoTtsSettings {
 
 export const DEFAULT_SETTINGS: MimoTtsSettings = {
   apiKey: "",
+  apiBase: MIMO_API_BASE,
   model: "mimo-v2.5-tts",
   presetVoice: "冰糖",
   voiceDesignPrompt: "",
@@ -79,6 +82,20 @@ export class MimoTtsSettingTab extends PluginSettingTab {
           });
         text.inputEl.type = "password";
         text.inputEl.style.width = "320px";
+      });
+
+    new Setting(container)
+      .setName("API Base URL")
+      .setDesc("Base URL ending at /v1. The plugin appends /chat/completions automatically. Token-plan keys usually use https://token-plan-sgp.xiaomimimo.com/v1")
+      .addText((text) => {
+        text
+          .setPlaceholder(MIMO_API_BASE)
+          .setValue(this.plugin.settings.apiBase)
+          .onChange(async (value) => {
+            this.plugin.settings.apiBase = value.trim();
+            await this.plugin.saveSettings();
+          });
+        text.inputEl.style.width = "420px";
       });
 
     new Setting(container)
