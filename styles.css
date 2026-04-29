@@ -1,0 +1,84 @@
+/* MiMo TTS Player Bar */
+.mimo-tts-player-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--background-primary);
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 6px 16px 8px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.mimo-tts-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mimo-tts-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: var(--text-normal);
+  line-height: 1;
+  min-width: 28px;
+  text-align: center;
+}
+
+.mimo-tts-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.mimo-tts-btn-play {
+  font-size: 18px;
+}
+
+.mimo-tts-btn-speed {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 36px;
+}
+
+.mimo-tts-btn-speed:hover {
+  color: var(--text-normal);
+}
+
+.mimo-tts-separator {
+  color: var(--text-faint);
+  padding: 0 4px;
+  user-select: none;
+}
+
+.mimo-tts-segment-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.mimo-tts-progress {
+  flex: 1;
+  height: 4px;
+  margin: 0 8px;
+  accent-color: var(--interactive-accent);
+  cursor: pointer;
+}
+
+.mimo-tts-text-preview {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
