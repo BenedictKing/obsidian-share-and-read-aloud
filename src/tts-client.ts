@@ -1,4 +1,8 @@
-import { buildMimoTtsEndpoint, type MimoModel } from "./constants";
+import {
+  MIN_TTS_REQUEST_INTERVAL_MS,
+  buildMimoTtsEndpoint,
+  type MimoModel,
+} from "./constants";
 import type { MimoTtsSettings } from "./settings";
 
 export interface TtsRequestOptions {
@@ -27,6 +31,8 @@ const RETRYABLE_HTTP_STATUSES = new Set([408, 409, 425, 429, 500, 502, 503, 504]
 export class MimoTtsClient {
   private settings: MimoTtsSettings;
   private voiceCloneDataUri: string | null = null;
+  private nextRequestStartAt = 0;
+  private requestQueue: Promise<void> = Promise.resolve();
 
   constructor(settings: MimoTtsSettings) {
     this.settings = settings;
@@ -81,6 +87,8 @@ export class MimoTtsClient {
 
     for (let attempt = 1; attempt <= MAX_SYNTHESIS_ATTEMPTS; attempt++) {
       try {
+        await this.waitForRequestSlot(signal);
+
         const response = await fetch(endpoint, {
           method: "POST",
           headers: {
@@ -138,6 +146,24 @@ export class MimoTtsClient {
     }
 
     throw lastError || new Error("MiMo TTS synthesis failed.");
+  }
+
+  private async waitForRequestSlot(signal?: AbortSignal): Promise<void> {
+    const previous = this.requestQueue.catch(() => undefined);
+    const current = previous.then(async () => {
+      throwIfAborted(signal);
+
+      const delayMs = Math.max(0, this.nextRequestStartAt - Date.now());
+      if (delayMs > 0) {
+        await wait(delayMs, signal);
+      }
+
+      throwIfAborted(signal);
+      this.nextRequestStartAt = Date.now() + MIN_TTS_REQUEST_INTERVAL_MS;
+    });
+
+    this.requestQueue = current.catch(() => undefined);
+    return current;
   }
 
   private buildMessages(
@@ -240,7 +266,10 @@ function isAbortError(error: unknown): boolean {
 
 function waitBeforeRetry(attempt: number, signal?: AbortSignal): Promise<void> {
   const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(RETRY_BACKOFF_FACTOR, attempt - 1);
+  return wait(delayMs, signal);
+}
 
+function wait(delayMs: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
       reject(new DOMException("The operation was aborted.", "AbortError"));
@@ -259,4 +288,10 @@ function waitBeforeRetry(attempt: number, signal?: AbortSignal): Promise<void> {
 
     signal?.addEventListener("abort", abort, { once: true });
   });
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new DOMException("The operation was aborted.", "AbortError");
+  }
 }

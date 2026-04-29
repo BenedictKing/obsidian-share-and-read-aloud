@@ -8,6 +8,7 @@ import {
   DEFAULT_MAX_SEGMENT_CHARS,
   DEFAULT_PREFETCH_COUNT,
   MAX_PREFETCH_COUNT,
+  MIN_TTS_REQUEST_INTERVAL_MS,
   DEFAULT_CACHE_EXPIRY_DAYS,
   STYLE_TAG_EXAMPLES,
   type MimoModel,
@@ -229,7 +230,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("Concurrent Prefetch Groups")
-      .setDesc(`How many TTS groups to synthesize in parallel before/ahead of playback. Default: ${DEFAULT_PREFETCH_COUNT}; max: ${MAX_PREFETCH_COUNT}.`)
+      .setDesc(`How many TTS groups to prepare ahead of playback. API request starts are spaced by at least ${MIN_TTS_REQUEST_INTERVAL_MS / 1000}s. Default: ${DEFAULT_PREFETCH_COUNT}; max: ${MAX_PREFETCH_COUNT}.`)
       .addText((text) => {
         text
           .setPlaceholder(String(DEFAULT_PREFETCH_COUNT))

@@ -12,7 +12,7 @@ Obsidian 插件：将笔记清洗为纯文本后分享/复制，或直接通过 
 ### MiMo TTS 朗读
 
 - 调用 MiMo-V2.5-TTS 云端 API 朗读笔记或选中文本
-- 长文本按目标字数均衡分组，支持可配置并发预生成后续音频
+- 长文本按目标字数均衡分组，支持预生成后续音频，请求启动至少间隔 1 秒
 - 播放控制栏：暂停/恢复、上一段/下一段、进度条、倍速切换（0.75x~2.0x）
 - IndexedDB 音频缓存，避免重复 API 调用
 - 保存音频到 vault（WAV 格式）
@@ -49,7 +49,7 @@ Obsidian 插件：将笔记清洗为纯文本后分享/复制，或直接通过 
 - **Style Instruction** — 风格指令（如"用温柔平稳的语调朗读"）
 - **Playback Speed** — 默认播放倍速
 - **Target Segment Characters** — 每组朗读目标字数，建议 300~500
-- **Concurrent Prefetch Groups** — 并发预生成组数，默认 4
+- **Concurrent Prefetch Groups** — 预生成组数，默认 4；API 请求启动至少间隔 1 秒
 - **Cache** — 缓存开关和过期天数
 - **UI** — 播放控制栏、Toast 通知开关
 

@@ -65,6 +65,7 @@ export type PlaybackSpeed = (typeof PLAYBACK_SPEEDS)[number];
 export const DEFAULT_MAX_SEGMENT_CHARS = 300;
 export const DEFAULT_PREFETCH_COUNT = 4;
 export const MAX_PREFETCH_COUNT = 8;
+export const MIN_TTS_REQUEST_INTERVAL_MS = 1000;
 export const DEFAULT_CACHE_EXPIRY_DAYS = 7;
 
 // Audio sample rate from MiMo
