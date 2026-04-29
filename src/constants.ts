@@ -62,7 +62,7 @@ export const PLAYBACK_SPEEDS = [0.75, 1.0, 1.25, 1.5, 2.0] as const;
 export type PlaybackSpeed = (typeof PLAYBACK_SPEEDS)[number];
 
 // Default settings
-export const DEFAULT_MAX_SEGMENT_CHARS = 2000;
+export const DEFAULT_MAX_SEGMENT_CHARS = 300;
 export const DEFAULT_PREFETCH_COUNT = 2;
 export const DEFAULT_CACHE_EXPIRY_DAYS = 7;
 

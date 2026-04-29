@@ -4,7 +4,7 @@ import type { MimoTtsClient } from "./tts-client";
 import type { AudioCache } from "./audio-cache";
 import { buildCacheKey } from "./audio-cache";
 import type { MimoTtsSettings } from "./settings";
-import { MIMO_MODELS, PRESET_VOICES, DEFAULT_PREFETCH_COUNT, buildMimoTtsEndpoint } from "./constants";
+import { DEFAULT_PREFETCH_COUNT, buildMimoTtsEndpoint } from "./constants";
 
 export type PlayerState = "idle" | "playing" | "paused" | "stopped";
 
@@ -34,6 +34,7 @@ export class AudioPlayer {
 
   private prefetchCount = DEFAULT_PREFETCH_COUNT;
   private prefetchBuffer = new Map<number, ArrayBuffer>();
+  private inFlightAudio = new Map<number, Promise<ArrayBuffer>>();
   private abortController: AbortController | null = null;
   private playGeneration = 0;
 
@@ -100,6 +101,7 @@ export class AudioPlayer {
     this.segments = segments;
     this.currentIndex = startIndex;
     this.prefetchBuffer.clear();
+    this.inFlightAudio.clear();
     this.abortController = new AbortController();
 
     this.setState("playing");
@@ -194,15 +196,15 @@ export class AudioPlayer {
       await this.playAudioData(audioData);
       if (gen !== this.playGeneration) return;
 
-      // Prefetch next segments in background
-      void this.prefetchNext(index);
-
       // When this segment ends, play next
       if (this.audio) {
         this.audio.onended = () => {
           void this.playSegment(index + 1, gen);
         };
       }
+
+      // Prefetch next segments after playback has started.
+      void this.prefetchNext(index, gen);
     } catch (error) {
       if (gen !== this.playGeneration) return;
       // Transition to idle so user can restart playback
@@ -219,6 +221,23 @@ export class AudioPlayer {
       return prefetched;
     }
 
+    const pending = this.inFlightAudio.get(segment.index);
+    if (pending) {
+      this.prefetchBuffer.delete(segment.index);
+      return await pending;
+    }
+
+    const request = this.fetchSegmentAudio(segment);
+    this.inFlightAudio.set(segment.index, request);
+
+    try {
+      return await request;
+    } finally {
+      this.inFlightAudio.delete(segment.index);
+    }
+  }
+
+  private async fetchSegmentAudio(segment: TextSegment): Promise<ArrayBuffer> {
     // Check cache
     if (this.settings.cacheEnabled && this.cache) {
       const cacheKey = this.buildSegmentCacheKey(segment);
@@ -267,18 +286,18 @@ export class AudioPlayer {
     });
   }
 
-  private async prefetchNext(currentIndex: number): Promise<void> {
-    if (!this.settings.cacheEnabled) return;
-
+  private async prefetchNext(currentIndex: number, generation: number): Promise<void> {
     for (let i = 1; i <= this.prefetchCount; i++) {
+      if (generation !== this.playGeneration) return;
+
       const nextIndex = currentIndex + i;
       if (nextIndex >= this.segments.length) break;
-      if (this.prefetchBuffer.has(nextIndex)) continue;
+      if (this.prefetchBuffer.has(nextIndex) || this.inFlightAudio.has(nextIndex)) continue;
 
       const segment = this.segments[nextIndex];
       try {
         const audioData = await this.getSegmentAudio(segment);
-        if (this.state !== "stopped") {
+        if (generation === this.playGeneration && this.currentIndex < nextIndex) {
           this.prefetchBuffer.set(nextIndex, audioData);
         }
       } catch {
@@ -308,6 +327,7 @@ export class AudioPlayer {
     this.abortController?.abort();
     this.abortController = null;
     this.prefetchBuffer.clear();
+    this.inFlightAudio.clear();
     if (notify) {
       this.setState("stopped");
     }

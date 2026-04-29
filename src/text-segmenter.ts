@@ -10,9 +10,24 @@ export interface TextSegment {
   index: number;
 }
 
+interface Paragraph {
+  text: string;
+  startLine: number;
+  endLine: number;
+  paragraphIndex: number;
+}
+
+interface SegmentDraft {
+  text: string;
+  startLine: number;
+  endLine: number;
+  paragraphIndex: number;
+}
+
 /**
  * Split normalized text into segments suitable for TTS synthesis.
- * Strategy: paragraphs → sentences (CJK-aware) → commas, respecting max chars.
+ * Strategy: paragraphs → sentences (CJK-aware) → commas, then merge short
+ * chunks so TTS gets fewer tiny requests.
  * @param lineOffset - Base line offset in the original editor document
  */
 export function segmentText(
@@ -26,63 +41,75 @@ export function segmentText(
   const safeMaxChars = maxChars > 0 ? maxChars : DEFAULT_MAX_SEGMENT_CHARS;
 
   const paragraphs = splitParagraphs(text);
-  const rawSegments: { text: string; lineOffset: number }[] = [];
+  const drafts: SegmentDraft[] = [];
 
   for (const para of paragraphs) {
-    if (para.text.length <= safeMaxChars) {
-      rawSegments.push(para);
-    } else {
-      const subSegments = splitLongParagraph(para.text, safeMaxChars);
-      for (const sub of subSegments) {
-        rawSegments.push({ text: sub, lineOffset: para.lineOffset });
-      }
+    const subSegments = splitLongParagraph(para.text, safeMaxChars);
+    for (const sub of subSegments) {
+      drafts.push({
+        text: sub,
+        startLine: para.startLine,
+        endLine: para.endLine,
+        paragraphIndex: para.paragraphIndex,
+      });
     }
   }
 
-  // Map line offsets to line ranges and assign indices.
-  // Use the paragraph's original lineOffset + document lineOffset.
-  return rawSegments
+  return mergeShortSegments(drafts, safeMaxChars)
     .filter((s) => s.text.trim().length > 0)
     .map((s, index) => {
-      const lineCount = countLines(s.text);
-      const startLine = s.lineOffset + lineOffset;
-      const endLine = s.lineOffset + lineCount - 1 + lineOffset;
       return {
         text: s.text.trim(),
-        startLine,
-        endLine,
+        startLine: s.startLine + lineOffset,
+        endLine: s.endLine + lineOffset,
         index,
       };
     });
 }
 
-function splitParagraphs(text: string): { text: string; lineOffset: number }[] {
-  // Track line numbers accurately by iterating through the original text
-  const result: { text: string; lineOffset: number }[] = [];
-  // Split preserving separators to track cumulative line offsets correctly
-  const parts = text.split(/(\n{2,})/);
-  let lineOffset = 0;
+function splitParagraphs(text: string): Paragraph[] {
+  const result: Paragraph[] = [];
+  const lines = text.split("\n");
+  let block: string[] = [];
+  let startLine: number | null = null;
 
-  for (let i = 0; i < parts.length; i += 2) {
-    const block = parts[i];
-    const separator = parts[i + 1]; // the \n{2,} between blocks
-    const trimmed = block.trim();
-    if (trimmed) {
-      result.push({ text: trimmed, lineOffset });
-    }
-    lineOffset += countLines(block);
-    if (separator) {
-      lineOffset += separator.split("\n").length - 1;
-    }
-  }
+  const flush = (endLine: number) => {
+    if (startLine === null || block.length === 0) return;
+    result.push({
+      text: block.join("\n").trim(),
+      startLine,
+      endLine,
+      paragraphIndex: result.length,
+    });
+    block = [];
+    startLine = null;
+  };
 
+  lines.forEach((line, index) => {
+    if (line.trim()) {
+      if (startLine === null) startLine = index;
+      block.push(line.trim());
+      return;
+    }
+
+    flush(index - 1);
+  });
+
+  flush(lines.length - 1);
   return result;
 }
 
 function splitLongParagraph(text: string, maxChars: number): string[] {
-  // Try splitting by sentences first (CJK-aware)
   const sentences = splitSentences(text);
-  return mergeByMaxChars(sentences, maxChars);
+  const pieces: string[] = [];
+  for (const sentence of sentences) {
+    if (sentence.length > maxChars) {
+      pieces.push(...splitByCommas(sentence, maxChars));
+    } else {
+      pieces.push(sentence);
+    }
+  }
+  return mergeByMaxChars(pieces, maxChars);
 }
 
 /**
@@ -100,45 +127,182 @@ function mergeByMaxChars(parts: string[], maxChars: number): string[] {
   let current = "";
 
   for (const part of parts) {
-    if (current.length + part.length + 1 > maxChars && current.length > 0) {
-      result.push(current.trim());
-      current = "";
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.length > maxChars) {
+      if (current) {
+        result.push(current.trim());
+        current = "";
+      }
+      result.push(...hardSplit(trimmed, maxChars));
+      continue;
     }
-    current += (current ? " " : "") + part;
+
+    const candidate = current ? `${current} ${trimmed}` : trimmed;
+    if (candidate.length > maxChars && current.length > 0) {
+      result.push(current.trim());
+      current = trimmed;
+    } else {
+      current = candidate;
+    }
   }
 
   if (current.trim()) {
-    // If single part still exceeds maxChars, split by commas
-    if (current.length > maxChars) {
-      result.push(...splitByCommas(current, maxChars));
-    } else {
-      result.push(current.trim());
-    }
+    result.push(current.trim());
   }
 
   return result;
 }
 
 function splitByCommas(text: string, maxChars: number): string[] {
-  const parts = text.split(/(?<=[，,；;、])\s*/);
+  const parts = text
+    .split(/(?<=[，,；;、])\s*/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
   // If no commas found (single element), hard-split by maxChars to avoid infinite recursion
   if (parts.length <= 1) {
     return hardSplit(text, maxChars);
   }
-  return mergeByMaxChars(parts, maxChars);
-}
-
-/** Hard-split text into fixed-size chunks as a last resort. */
-function hardSplit(text: string, maxChars: number): string[] {
   const result: string[] = [];
-  let offset = 0;
-  while (offset < text.length) {
-    result.push(text.slice(offset, offset + maxChars));
-    offset += maxChars;
+  for (const part of parts) {
+    if (part.length > maxChars) {
+      result.push(...hardSplit(part, maxChars));
+    } else {
+      result.push(part);
+    }
   }
   return result;
 }
 
-function countLines(text: string): number {
-  return text.split("\n").length;
+/** Hard-split text into balanced chunks as a last resort. */
+function hardSplit(text: string, maxChars: number): string[] {
+  const result: string[] = [];
+  const groupCount = Math.ceil(text.length / maxChars);
+  const targetLength = Math.ceil(text.length / groupCount);
+  let offset = 0;
+
+  while (offset < text.length) {
+    result.push(text.slice(offset, offset + targetLength));
+    offset += targetLength;
+  }
+
+  return result;
+}
+
+function mergeShortSegments(segments: SegmentDraft[], maxChars: number): SegmentDraft[] {
+  if (segments.length <= 1) return segments;
+
+  const rangeLengths = buildRangeLengths(segments);
+  const totalLength = rangeLengths[0][segments.length];
+  if (totalLength <= maxChars) {
+    return [combineRange(segments, 0, segments.length)];
+  }
+
+  const minGroupCount = Math.ceil(totalLength / maxChars);
+  for (let groupCount = minGroupCount; groupCount <= segments.length; groupCount++) {
+    const partition = findBalancedPartition(
+      rangeLengths,
+      groupCount,
+      totalLength / groupCount,
+      maxChars
+    );
+
+    if (partition) {
+      return partition.map(([start, end]) => combineRange(segments, start, end));
+    }
+  }
+
+  return segments;
+}
+
+function buildRangeLengths(segments: SegmentDraft[]): number[][] {
+  const lengths: number[][] = [];
+
+  for (let start = 0; start < segments.length; start++) {
+    lengths[start] = [];
+    let length = 0;
+
+    for (let end = start + 1; end <= segments.length; end++) {
+      if (end > start + 1) {
+        length += getSeparator(segments[end - 2], segments[end - 1]).length;
+      }
+      length += segments[end - 1].text.length;
+      lengths[start][end] = length;
+    }
+  }
+
+  return lengths;
+}
+
+function findBalancedPartition(
+  rangeLengths: number[][],
+  groupCount: number,
+  idealLength: number,
+  maxChars: number
+): [number, number][] | null {
+  const count = rangeLengths.length;
+  const costs: number[][] = [];
+  const prevs: number[][] = [];
+
+  for (let group = 0; group <= groupCount; group++) {
+    costs[group] = [];
+    prevs[group] = [];
+    for (let end = 0; end <= count; end++) {
+      costs[group][end] = Number.POSITIVE_INFINITY;
+      prevs[group][end] = -1;
+    }
+  }
+
+  costs[0][0] = 0;
+
+  for (let group = 1; group <= groupCount; group++) {
+    for (let end = group; end <= count; end++) {
+      for (let start = end - 1; start >= group - 1; start--) {
+        const length = rangeLengths[start][end];
+        if (length > maxChars) break;
+
+        const previousCost = costs[group - 1][start];
+        if (!Number.isFinite(previousCost)) continue;
+
+        const cost = previousCost + Math.pow(length - idealLength, 2);
+        if (cost < costs[group][end]) {
+          costs[group][end] = cost;
+          prevs[group][end] = start;
+        }
+      }
+    }
+  }
+
+  if (!Number.isFinite(costs[groupCount][count])) return null;
+
+  const partition: [number, number][] = [];
+  let end = count;
+  for (let group = groupCount; group > 0; group--) {
+    const start = prevs[group][end];
+    if (start < 0) return null;
+    partition.unshift([start, end]);
+    end = start;
+  }
+
+  return partition;
+}
+
+function combineRange(segments: SegmentDraft[], start: number, end: number): SegmentDraft {
+  let text = segments[start].text;
+
+  for (let i = start + 1; i < end; i++) {
+    text += `${getSeparator(segments[i - 1], segments[i])}${segments[i].text}`;
+  }
+
+  return {
+    text,
+    startLine: segments[start].startLine,
+    endLine: segments[end - 1].endLine,
+    paragraphIndex: segments[end - 1].paragraphIndex,
+  };
+}
+
+function getSeparator(left: SegmentDraft, right: SegmentDraft): string {
+  return left.paragraphIndex === right.paragraphIndex ? " " : "\n";
 }

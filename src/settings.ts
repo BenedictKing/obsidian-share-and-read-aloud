@@ -208,11 +208,11 @@ export class MimoTtsSettingTab extends PluginSettingTab {
       });
 
     new Setting(container)
-      .setName("Max Segment Characters")
-      .setDesc("Maximum characters per text segment for synthesis (default: 2000)")
+      .setName("Target Segment Characters")
+      .setDesc("Target character count per TTS group. Short paragraphs are balanced into groups near this size; 300-500 is recommended.")
       .addText((text) => {
         text
-          .setPlaceholder("2000")
+          .setPlaceholder("300")
           .setValue(String(this.plugin.settings.maxSegmentChars))
           .onChange(async (value) => {
             const num = parseInt(value, 10);
