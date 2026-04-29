@@ -15,6 +15,11 @@ export interface TtsSynthesisResult {
   format: string;
 }
 
+const MAX_SYNTHESIS_ATTEMPTS = 3;
+const INITIAL_RETRY_DELAY_MS = 800;
+const RETRY_BACKOFF_FACTOR = 2;
+const RETRYABLE_HTTP_STATUSES = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
+
 /**
  * MiMo TTS API client.
  * Calls the chat/completions endpoint and decodes base64 audio from the response.
@@ -72,32 +77,67 @@ export class MimoTtsClient {
     });
 
     const endpoint = buildMimoTtsEndpoint(this.settings.apiBase);
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": this.settings.apiKey,
-      },
-      body,
-      signal,
-    });
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "Unknown error");
-      throw new Error(`MiMo TTS API error (${response.status}): ${errorText}`);
+    for (let attempt = 1; attempt <= MAX_SYNTHESIS_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": this.settings.apiKey,
+          },
+          body,
+          signal,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => "Unknown error");
+          const error = new Error(`MiMo TTS API error (${response.status}): ${errorText}`);
+          lastError = error;
+
+          if (!shouldRetryHttpStatus(response.status) || attempt === MAX_SYNTHESIS_ATTEMPTS) {
+            throw error;
+          }
+
+          await waitBeforeRetry(attempt, signal);
+          continue;
+        }
+
+        const json = await response.json() as MimoApiResponse;
+        const audioBase64 = json?.choices?.[0]?.message?.audio?.data;
+
+        if (!audioBase64) {
+          const error = new Error("No audio data in MiMo TTS response.");
+          lastError = error;
+
+          if (attempt === MAX_SYNTHESIS_ATTEMPTS) {
+            throw error;
+          }
+
+          await waitBeforeRetry(attempt, signal);
+          continue;
+        }
+
+        return {
+          audioData: base64ToArrayBuffer(audioBase64),
+          format,
+        };
+      } catch (error) {
+        if (isAbortError(error) || signal?.aborted) {
+          throw error;
+        }
+
+        if (!isRetryableFetchError(error) || attempt === MAX_SYNTHESIS_ATTEMPTS) {
+          throw error;
+        }
+
+        lastError = error instanceof Error ? error : new Error(String(error));
+        await waitBeforeRetry(attempt, signal);
+      }
     }
 
-    const json = await response.json() as MimoApiResponse;
-    const audioBase64 = json?.choices?.[0]?.message?.audio?.data;
-
-    if (!audioBase64) {
-      throw new Error("No audio data in MiMo TTS response.");
-    }
-
-    return {
-      audioData: base64ToArrayBuffer(audioBase64),
-      format,
-    };
+    throw lastError || new Error("MiMo TTS synthesis failed.");
   }
 
   private buildMessages(
@@ -182,4 +222,41 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+function shouldRetryHttpStatus(status: number): boolean {
+  return RETRYABLE_HTTP_STATUSES.has(status);
+}
+
+function isRetryableFetchError(error: unknown): boolean {
+  return error instanceof TypeError || error instanceof SyntaxError;
+}
+
+function isAbortError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const maybeAbortError = error as { name?: string };
+  return maybeAbortError.name === "AbortError";
+}
+
+function waitBeforeRetry(attempt: number, signal?: AbortSignal): Promise<void> {
+  const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(RETRY_BACKOFF_FACTOR, attempt - 1);
+
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      signal?.removeEventListener("abort", abort);
+      resolve();
+    }, delayMs);
+
+    const abort = () => {
+      window.clearTimeout(timeout);
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+    };
+
+    signal?.addEventListener("abort", abort, { once: true });
+  });
 }
