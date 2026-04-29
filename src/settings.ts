@@ -6,6 +6,8 @@ import {
   PRESET_VOICES,
   PLAYBACK_SPEEDS,
   DEFAULT_MAX_SEGMENT_CHARS,
+  DEFAULT_PREFETCH_COUNT,
+  MAX_PREFETCH_COUNT,
   DEFAULT_CACHE_EXPIRY_DAYS,
   STYLE_TAG_EXAMPLES,
   type MimoModel,
@@ -27,6 +29,7 @@ export interface MimoTtsSettings {
   showPlayerBar: boolean;
   showNotice: boolean;
   maxSegmentChars: number;
+  prefetchCount: number;
 }
 
 export const DEFAULT_SETTINGS: MimoTtsSettings = {
@@ -44,6 +47,7 @@ export const DEFAULT_SETTINGS: MimoTtsSettings = {
   showPlayerBar: true,
   showNotice: true,
   maxSegmentChars: DEFAULT_MAX_SEGMENT_CHARS,
+  prefetchCount: DEFAULT_PREFETCH_COUNT,
 };
 
 export class MimoTtsSettingTab extends PluginSettingTab {
@@ -218,6 +222,22 @@ export class MimoTtsSettingTab extends PluginSettingTab {
             const num = parseInt(value, 10);
             if (!isNaN(num) && num > 0) {
               this.plugin.settings.maxSegmentChars = num;
+              await this.plugin.saveSettings();
+            }
+          });
+      });
+
+    new Setting(container)
+      .setName("Concurrent Prefetch Groups")
+      .setDesc(`How many TTS groups to synthesize in parallel before/ahead of playback. Default: ${DEFAULT_PREFETCH_COUNT}; max: ${MAX_PREFETCH_COUNT}.`)
+      .addText((text) => {
+        text
+          .setPlaceholder(String(DEFAULT_PREFETCH_COUNT))
+          .setValue(String(this.plugin.settings.prefetchCount))
+          .onChange(async (value) => {
+            const num = parseInt(value, 10);
+            if (!isNaN(num) && num >= 1 && num <= MAX_PREFETCH_COUNT) {
+              this.plugin.settings.prefetchCount = num;
               await this.plugin.saveSettings();
             }
           });

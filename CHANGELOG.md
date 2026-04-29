@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **播放控制栏**: 底部悬浮控制栏，支持暂停/恢复、上一段/下一段、进度条拖拽、倍速切换（0.75x~2.0x）
 - **长文本分段**: 段落→句子（CJK 感知）→逗号三级分段后，按目标字数均衡合并短段落
 - **音频缓存**: IndexedDB 缓存已合成音频，避免重复 API 调用，支持过期自动清理
-- **音频预加载**: 播放时后台预生成下 2 段并复用在途请求，减少段间停顿
+- **音频预加载**: 支持可配置并发预生成，默认 4 组；连续 2 组可播放后立即开始朗读
 - **保存音频到 vault**: 将当前播放的音频导出为 WAV 文件到 vault
 - **设置页面**: 完整的 PluginSettingTab，配置 API Key、模型、音色、风格指令、缓存、UI 选项等
 - **6 个新命令**: Read note aloud / Read selection aloud / Stop reading / Pause-Resume / Save audio / Clear cache
