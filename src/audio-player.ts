@@ -1,4 +1,3 @@
-import { Notice } from "obsidian";
 import type { TextSegment } from "./text-segmenter";
 import type { MimoTtsClient } from "./tts-client";
 import type { AudioCache } from "./audio-cache";

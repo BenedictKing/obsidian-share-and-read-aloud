@@ -4,6 +4,7 @@ import {
   type MimoModel,
 } from "./constants";
 import type { MimoTtsSettings } from "./settings";
+import { requestUrl } from "obsidian";
 
 export interface TtsRequestOptions {
   text: string;
@@ -26,7 +27,8 @@ const RETRYABLE_HTTP_STATUSES = new Set([408, 409, 425, 429, 500, 502, 503, 504]
 
 /**
  * MiMo TTS API client.
- * Calls the chat/completions endpoint and decodes base64 audio from the response.
+ * Uses Obsidian's `requestUrl` to call the chat/completions endpoint and
+ * decodes base64 audio from the response.
  */
 export class MimoTtsClient {
   private settings: MimoTtsSettings;
@@ -88,31 +90,8 @@ export class MimoTtsClient {
     for (let attempt = 1; attempt <= MAX_SYNTHESIS_ATTEMPTS; attempt++) {
       try {
         await this.waitForRequestSlot(signal);
+        const json = await fetchTtsBody(endpoint, this.settings.apiKey, body);
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "api-key": this.settings.apiKey,
-          },
-          body,
-          signal,
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text().catch(() => "Unknown error");
-          const error = new Error(`MiMo TTS API error (${response.status}): ${errorText}`);
-          lastError = error;
-
-          if (!shouldRetryHttpStatus(response.status) || attempt === MAX_SYNTHESIS_ATTEMPTS) {
-            throw error;
-          }
-
-          await waitBeforeRetry(attempt, signal);
-          continue;
-        }
-
-        const json = await response.json() as MimoApiResponse;
         const audioBase64 = json?.choices?.[0]?.message?.audio?.data;
 
         if (!audioBase64) {
@@ -136,7 +115,7 @@ export class MimoTtsClient {
           throw error;
         }
 
-        if (!isRetryableFetchError(error) || attempt === MAX_SYNTHESIS_ATTEMPTS) {
+        if (!isRetryableNetworkError(error) || attempt === MAX_SYNTHESIS_ATTEMPTS) {
           throw error;
         }
 
@@ -178,7 +157,7 @@ export class MimoTtsClient {
       // VoiceDesign model requires user message as voice description
       const prompt = this.settings.voiceDesignPrompt || styleInstruction || "";
       if (!prompt.trim()) {
-        throw new Error("VoiceDesign model requires a voice description. Please set 'Voice Description' in plugin settings.");
+        throw new Error("VoiceDesign model requires a voice description. Please set 'Voice description' in plugin settings.");
       }
       messages.push({ role: "user", content: prompt });
     } else if (styleInstruction || this.settings.styleInstruction) {
@@ -211,7 +190,7 @@ export class MimoTtsClient {
       const cloneVoice = voice || this.voiceCloneDataUri;
       if (!cloneVoice) {
         throw new Error(
-          "VoiceClone model requires a loaded audio sample. Please configure a valid 'Voice Clone Audio Path' in plugin settings."
+          "VoiceClone model requires a loaded audio sample. Please configure a valid 'Voice clone audio path' in plugin settings."
         );
       }
       audio.voice = cloneVoice;
@@ -232,6 +211,42 @@ interface MimoApiResponse {
   }[];
 }
 
+async function fetchTtsBody(
+  url: string,
+  apiKey: string,
+  body: string
+): Promise<MimoApiResponse> {
+  const response = await requestUrl({
+    url,
+    method: "POST",
+    contentType: "application/json",
+    headers: {
+      "api-key": apiKey,
+    },
+    body,
+    throw: false,
+  });
+
+  const status: number = response.status;
+
+  if (!isSuccessStatus(status)) {
+    const errorText = response.text || "Unknown error";
+    throw new Error(`MiMo TTS API error (${status}): ${errorText}`);
+  }
+
+  const json = response.json as MimoApiResponse | undefined;
+
+  if (!json) {
+    throw new Error("Invalid JSON in MiMo TTS response.");
+  }
+
+  return json;
+}
+
+function isSuccessStatus(status: number): boolean {
+  return status >= 200 && status < 300;
+}
+
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -250,11 +265,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-function shouldRetryHttpStatus(status: number): boolean {
-  return RETRYABLE_HTTP_STATUSES.has(status);
-}
-
-function isRetryableFetchError(error: unknown): boolean {
+function isRetryableNetworkError(error: unknown): boolean {
   return error instanceof TypeError || error instanceof SyntaxError;
 }
 

@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.2.3] - 2026-04-30
+
+### Changed
+
+- **TTS 请求改用 Obsidian `requestUrl`**: 替换 `fetch()` 为 Obsidian 原生 `requestUrl`，避免移动端 CORS 限制
+- **文本分段兼容 iOS < 16.4**: 移除 lookbehind 正则，改用 capture-group 拆分 + 合并，兼容 Safari 旧版本
+- **设置页面规范**: 标题使用 `Setting.setHeading()` 替代手动 `h3`；设置名称统一 sentence case；内联 `style.width` 替换为 CSS 类
+
+### Fixed
+
+- 移除未使用的 `Notice` import 和多余类型断言
+
 ## [0.2.1] - 2026-04-29
 
 ### Added

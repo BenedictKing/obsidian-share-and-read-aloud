@@ -117,9 +117,19 @@ function splitLongParagraph(text: string, maxChars: number): string[] {
  * (。！？) in addition to Western punctuation (.!?).
  */
 function splitSentences(text: string): string[] {
-  // Split at sentence-ending punctuation followed by whitespace or end
-  const parts = text.split(/(?<=[。！？.!?])\s*/);
-  return parts.filter((p) => p.trim().length > 0);
+  // Capture punctuation into the next chunk, avoiding lookbehind for iOS < 16.4.
+  const parts = text.split(/([。！？.!?])\s*/);
+  const merged: string[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    // Odd indices are captured punctuation; merge with next text chunk.
+    if (i + 1 < parts.length && /^[。！？.!?]$/.test(parts[i])) {
+      merged.push(parts[i] + (parts[i + 1] ?? ""));
+      i++;
+    } else if (parts[i].trim()) {
+      merged.push(parts[i]);
+    }
+  }
+  return merged;
 }
 
 function mergeByMaxChars(parts: string[], maxChars: number): string[] {
@@ -156,10 +166,18 @@ function mergeByMaxChars(parts: string[], maxChars: number): string[] {
 }
 
 function splitByCommas(text: string, maxChars: number): string[] {
-  const parts = text
-    .split(/(?<=[，,；;、])\s*/)
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
+  // Capture delimiter into the next chunk, avoiding lookbehind for iOS < 16.4.
+  const raw = text.split(/([，,；;、])\s*/);
+  const merged: string[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    if (i + 1 < raw.length && /^[，,；;、]$/.test(raw[i])) {
+      merged.push(raw[i] + (raw[i + 1] ?? ""));
+      i++;
+    } else if (raw[i].trim()) {
+      merged.push(raw[i].trim());
+    }
+  }
+  const parts = merged.filter((part) => part.length > 0);
   // If no commas found (single element), hard-split by maxChars to avoid infinite recursion
   if (parts.length <= 1) {
     return hardSplit(text, maxChars);

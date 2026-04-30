@@ -43,7 +43,7 @@ class TextPreviewModal extends Modal {
     textArea.setValue(this.text);
     textArea.inputEl.readOnly = true;
     textArea.inputEl.rows = 16;
-    textArea.inputEl.style.width = "100%";
+    textArea.inputEl.addClass("share-read-aloud-full-width");
     textArea.inputEl.select();
   }
 

@@ -151,7 +151,7 @@ export class PlayerBar {
     // Progress slider
     this.progressSlider = controlsRow.createEl("input", {
       cls: "mimo-tts-progress",
-    }) as HTMLInputElement;
+    });
     this.progressSlider.type = "range";
     this.progressSlider.min = "0";
     this.progressSlider.max = "0";

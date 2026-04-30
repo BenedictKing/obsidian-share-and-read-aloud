@@ -82,3 +82,16 @@
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+/* Settings form helpers */
+.share-read-aloud-full-width {
+  width: 100%;
+}
+
+.share-read-aloud-input-320 {
+  width: 320px;
+}
+
+.share-read-aloud-input-420 {
+  width: 420px;
+}

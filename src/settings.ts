@@ -72,10 +72,10 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   }
 
   private renderApiSection(container: HTMLElement): void {
-    container.createEl("h3", { text: "MiMo TTS API" });
+    new Setting(container).setName("MiMo TTS API").setHeading();
 
     new Setting(container)
-      .setName("API Key")
+      .setName("API key")
       .setDesc("Your MiMo API key from platform.xiaomimimo.com")
       .addText((text) => {
         text
@@ -86,11 +86,11 @@ export class MimoTtsSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
         text.inputEl.type = "password";
-        text.inputEl.style.width = "320px";
+        text.inputEl.addClass("share-read-aloud-input-320");
       });
 
     new Setting(container)
-      .setName("API Base URL")
+      .setName("API base URL")
       .setDesc("Base URL ending at /v1. The plugin appends /chat/completions automatically. Token-plan keys usually use https://token-plan-sgp.xiaomimimo.com/v1")
       .addText((text) => {
         text
@@ -100,7 +100,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
             this.plugin.settings.apiBase = value.trim();
             await this.plugin.saveSettings();
           });
-        text.inputEl.style.width = "420px";
+        text.inputEl.addClass("share-read-aloud-input-420");
       });
 
     new Setting(container)
@@ -120,12 +120,12 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   }
 
   private renderVoiceSection(container: HTMLElement): void {
-    container.createEl("h3", { text: "Voice" });
+    new Setting(container).setName("Voice").setHeading();
     const { model } = this.plugin.settings;
 
     if (model === "mimo-v2.5-tts") {
       new Setting(container)
-        .setName("Preset Voice")
+        .setName("Preset voice")
         .setDesc("Select a preset voice for synthesis")
         .addDropdown((dropdown) => {
           for (const v of PRESET_VOICES) {
@@ -141,7 +141,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     if (model === "mimo-v2.5-tts-voicedesign") {
       new Setting(container)
-        .setName("Voice Description")
+        .setName("Voice description")
         .setDesc("Describe the voice you want (e.g., '温柔的年轻女性，语速适中')")
         .addTextArea((text) => {
           text
@@ -151,14 +151,14 @@ export class MimoTtsSettingTab extends PluginSettingTab {
               this.plugin.settings.voiceDesignPrompt = value;
               await this.plugin.saveSettings();
             });
-          text.inputEl.style.width = "100%";
+          text.inputEl.addClass("share-read-aloud-full-width");
           text.inputEl.rows = 3;
         });
     }
 
     if (model === "mimo-v2.5-tts-voiceclone") {
       new Setting(container)
-        .setName("Voice Clone Audio Path")
+        .setName("Voice clone audio path")
         .setDesc("Path to an audio sample file in your vault (.mp3 or .wav) for voice cloning")
         .addText((text) => {
           text
@@ -168,12 +168,12 @@ export class MimoTtsSettingTab extends PluginSettingTab {
               this.plugin.settings.voiceCloneAudioPath = value.trim();
               await this.plugin.saveSettings();
             });
-          text.inputEl.style.width = "320px";
+          text.inputEl.addClass("share-read-aloud-input-320");
         });
     }
 
     new Setting(container)
-      .setName("Style Instruction")
+      .setName("Style instruction")
       .setDesc("Optional natural language style control (placed in user message)")
       .addTextArea((text) => {
         text
@@ -185,7 +185,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
             this.plugin.settings.styleInstruction = value;
             await this.plugin.saveSettings();
           });
-        text.inputEl.style.width = "100%";
+        text.inputEl.addClass("share-read-aloud-full-width");
         text.inputEl.rows = 2;
       });
 
@@ -196,10 +196,10 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   }
 
   private renderPlaybackSection(container: HTMLElement): void {
-    container.createEl("h3", { text: "Playback" });
+    new Setting(container).setName("Playback").setHeading();
 
     new Setting(container)
-      .setName("Default Playback Speed")
+      .setName("Default playback speed")
       .setDesc("Initial playback speed for TTS audio")
       .addDropdown((dropdown) => {
         for (const speed of PLAYBACK_SPEEDS) {
@@ -213,7 +213,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
       });
 
     new Setting(container)
-      .setName("Target Segment Characters")
+      .setName("Target segment characters")
       .setDesc("Target character count per TTS group. Short paragraphs are balanced into groups near this size; 300-500 is recommended.")
       .addText((text) => {
         text
@@ -229,7 +229,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
       });
 
     new Setting(container)
-      .setName("Concurrent Prefetch Groups")
+      .setName("Concurrent prefetch groups")
       .setDesc(`How many TTS groups to prepare ahead of playback. API request starts are spaced by at least ${MIN_TTS_REQUEST_INTERVAL_MS / 1000}s. Default: ${DEFAULT_PREFETCH_COUNT}; max: ${MAX_PREFETCH_COUNT}.`)
       .addText((text) => {
         text
@@ -246,10 +246,10 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   }
 
   private renderCacheSection(container: HTMLElement): void {
-    container.createEl("h3", { text: "Cache" });
+    new Setting(container).setName("Cache").setHeading();
 
     new Setting(container)
-      .setName("Enable Audio Cache")
+      .setName("Enable audio cache")
       .setDesc("Cache synthesized audio in IndexedDB to avoid redundant API calls")
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.cacheEnabled);
@@ -262,7 +262,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.cacheEnabled) {
       new Setting(container)
-        .setName("Cache Expiry (days)")
+        .setName("Cache expiry (days)")
         .setDesc("Auto-remove cached audio older than this many days")
         .addText((text) => {
           text
@@ -280,10 +280,10 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   }
 
   private renderUiSection(container: HTMLElement): void {
-    container.createEl("h3", { text: "User Interface" });
+    new Setting(container).setName("User interface").setHeading();
 
     new Setting(container)
-      .setName("Show Player Bar")
+      .setName("Show player bar")
       .setDesc("Display a floating player bar at the bottom during playback")
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.showPlayerBar);
@@ -294,7 +294,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
       });
 
     new Setting(container)
-      .setName("Show Notices")
+      .setName("Show notices")
       .setDesc("Display toast notifications for TTS events (start, error, etc.)")
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.showNotice);
