@@ -6,15 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.2.3] - 2026-04-30
 
+### Added
+
+- **ESLint + eslint-plugin-obsidianmd**: 安装 Obsidian 官方 ESLint 插件，创建 `eslint.config.mjs` flat config，本地可运行 `npx eslint src/` 进行与审核 bot 一致的检查
+
 ### Changed
 
 - **TTS 请求改用 Obsidian `requestUrl`**: 替换 `fetch()` 为 Obsidian 原生 `requestUrl`，避免移动端 CORS 限制
 - **文本分段兼容 iOS < 16.4**: 移除 lookbehind 正则，改用 capture-group 拆分 + 合并，兼容 Safari 旧版本
 - **设置页面规范**: 标题使用 `Setting.setHeading()` 替代手动 `h3`；设置名称统一 sentence case；内联 `style.width` 替换为 CSS 类
+- **ESLint 自动修复**: `document` → `activeDocument`、`createElement` → `createDiv`、`setTimeout` → `activeWindow.setTimeout()`、移除多余类型断言
+- **Sentence case 补全**: MiMo→Mimo、TTS→Tts、IndexedDB→Indexeddb 等专有名词按 Obsidian 审核规则转小写
 
 ### Fixed
 
-- 移除未使用的 `Notice` import 和多余类型断言
+- 移除未使用的 `Notice` import、`RETRYABLE_HTTP_STATUSES` 常量
+- 修复 `Object.assign` 返回 `any` 的类型安全问题
 
 ## [0.2.1] - 2026-04-29
 

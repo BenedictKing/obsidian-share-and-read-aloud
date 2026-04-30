@@ -23,7 +23,6 @@ export interface TtsSynthesisResult {
 const MAX_SYNTHESIS_ATTEMPTS = 3;
 const INITIAL_RETRY_DELAY_MS = 800;
 const RETRY_BACKOFF_FACTOR = 2;
-const RETRYABLE_HTTP_STATUSES = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 /**
  * MiMo TTS API client.

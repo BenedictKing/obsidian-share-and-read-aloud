@@ -197,7 +197,7 @@ export default class ShareCleanTextPlugin extends Plugin {
 
     this.addCommand({
       id: "pause-resume-reading",
-      name: "Pause/Resume reading",
+      name: "Pause/resume reading",
       checkCallback: (checking) => {
         const state = this.audioPlayer.getState();
         const isActive = state === "playing" || state === "paused";
@@ -211,7 +211,7 @@ export default class ShareCleanTextPlugin extends Plugin {
 
     this.addCommand({
       id: "save-audio-to-vault",
-      name: "Save current TTS audio to vault",
+      name: "Save current tts audio to vault",
       checkCallback: (checking) => {
         const isActive = this.audioPlayer.getState() !== "idle";
         if (!isActive) return false;
@@ -224,10 +224,10 @@ export default class ShareCleanTextPlugin extends Plugin {
 
     this.addCommand({
       id: "clear-tts-cache",
-      name: "Clear TTS audio cache",
+      name: "Clear tts audio cache",
       callback: async () => {
         await this.audioCache.clear();
-        new Notice("TTS audio cache cleared.");
+        new Notice("Tts audio cache cleared.");
       },
     });
   }
@@ -238,7 +238,7 @@ export default class ShareCleanTextPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as MimoTtsSettings;
   }
 
   async saveSettings() {
@@ -257,7 +257,7 @@ export default class ShareCleanTextPlugin extends Plugin {
 
   private async readCurrentNote(): Promise<void> {
     if (!this.settings.apiKey) {
-      new Notice("Please configure MiMo API key in plugin settings first.");
+      new Notice("Please configure mimo API key in plugin settings first.");
       return;
     }
 
@@ -274,7 +274,7 @@ export default class ShareCleanTextPlugin extends Plugin {
 
   private async readSelection(editor: Editor): Promise<void> {
     if (!this.settings.apiKey) {
-      new Notice("Please configure MiMo API key in plugin settings first.");
+      new Notice("Please configure mimo API key in plugin settings first.");
       return;
     }
 
@@ -345,7 +345,7 @@ export default class ShareCleanTextPlugin extends Plugin {
   private ensurePlayerBar(): void {
     if (this.playerBar) return;
 
-    const appContainer = document.querySelector(".app-container") as HTMLElement;
+    const appContainer = activeDocument.querySelector(".app-container") as HTMLElement;
     if (!appContainer) return;
 
     this.playerBar = new PlayerBar(appContainer, {
@@ -406,7 +406,7 @@ export default class ShareCleanTextPlugin extends Plugin {
       new Notice("Reading complete.");
     }
     // Auto-hide player bar after a delay
-    setTimeout(() => {
+    activeWindow.setTimeout(() => {
       if (this.audioPlayer.getState() === "idle") {
         this.playerBar?.hide();
       }
@@ -484,9 +484,7 @@ export default class ShareCleanTextPlugin extends Plugin {
   }
 
   private prependFrontmatterMetadata(file: TFile, body: string): string {
-    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter as
-      | Record<string, unknown>
-      | undefined;
+    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
     const title = this.getFrontmatterText(frontmatter, "title") ?? file.basename;
     const description = this.getFrontmatterText(frontmatter, "description");
     const parts = [title, description, body].filter(

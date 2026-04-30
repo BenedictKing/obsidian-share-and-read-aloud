@@ -62,7 +62,6 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Share & Read Aloud" });
 
     this.renderApiSection(containerEl);
     this.renderVoiceSection(containerEl);
@@ -72,7 +71,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   }
 
   private renderApiSection(container: HTMLElement): void {
-    new Setting(container).setName("MiMo TTS API").setHeading();
+    new Setting(container).setName("Mimo tts API").setHeading();
 
     new Setting(container)
       .setName("API key")
@@ -91,7 +90,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("API base URL")
-      .setDesc("Base URL ending at /v1. The plugin appends /chat/completions automatically. Token-plan keys usually use https://token-plan-sgp.xiaomimimo.com/v1")
+      .setDesc("Base URL ending at /v1. The plugin appends /chat/completions automatically. Token-plan keys usually use HTTPS://token-plan-sgp.xiaomimimo.com/v1")
       .addText((text) => {
         text
           .setPlaceholder(MIMO_API_BASE)
@@ -105,7 +104,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("Model")
-      .setDesc("TTS model to use")
+      .setDesc("Tts model to use")
       .addDropdown((dropdown) => {
         for (const m of MIMO_MODELS) {
           dropdown.addOption(m.id, m.name);
@@ -178,7 +177,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
       .addTextArea((text) => {
         text
           .setPlaceholder(
-            "e.g., 用温柔平稳的语调朗读，语速稍慢"
+            "E.g., 用温柔平稳的语调朗读，语速稍慢"
           )
           .setValue(this.plugin.settings.styleInstruction)
           .onChange(async (value) => {
@@ -200,7 +199,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("Default playback speed")
-      .setDesc("Initial playback speed for TTS audio")
+      .setDesc("Initial playback speed for tts audio")
       .addDropdown((dropdown) => {
         for (const speed of PLAYBACK_SPEEDS) {
           dropdown.addOption(String(speed), `${speed}x`);
@@ -214,7 +213,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("Target segment characters")
-      .setDesc("Target character count per TTS group. Short paragraphs are balanced into groups near this size; 300-500 is recommended.")
+      .setDesc("Target character count per tts group. Short paragraphs are balanced into groups near this size; 300-500 is recommended.")
       .addText((text) => {
         text
           .setPlaceholder("300")
@@ -250,7 +249,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("Enable audio cache")
-      .setDesc("Cache synthesized audio in IndexedDB to avoid redundant API calls")
+      .setDesc("Cache synthesized audio in indexeddb to avoid redundant API calls")
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.cacheEnabled);
         toggle.onChange(async (value) => {
@@ -295,7 +294,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
 
     new Setting(container)
       .setName("Show notices")
-      .setDesc("Display toast notifications for TTS events (start, error, etc.)")
+      .setDesc("Display toast notifications for tts events (start, error, etc.)")
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.showNotice);
         toggle.onChange(async (value) => {

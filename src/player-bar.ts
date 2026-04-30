@@ -39,11 +39,10 @@ export class PlayerBar {
   }
 
   show(): void {
-    if (this.rootEl) return; // already shown
+    if (this.rootEl || !this.containerEl) return; // already shown or no container
 
-    this.rootEl = document.createElement("div");
+    this.rootEl = this.containerEl.createDiv();
     this.rootEl.addClass("mimo-tts-player-bar");
-    this.containerEl?.appendChild(this.rootEl);
 
     this.render();
   }
