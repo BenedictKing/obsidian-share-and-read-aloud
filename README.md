@@ -1,93 +1,99 @@
+**English** | [中文](./README.zh.md)
+
 # Share & Read Aloud
 
-Obsidian 插件：将笔记清洗为纯文本后分享/复制，或通过 TTS 朗读。
+An Obsidian plugin that cleans Markdown into readable text for sharing/copying, or reads it aloud via TTS.
 
-## 功能
+## Features
 
-### 文本清洗 & 分享
+### Text cleaning & sharing
 
-- 清洗 Markdown（frontmatter、链接、代码块、表格等）为可读纯文本
-- 优先调用系统分享 → 回退剪贴板 → 最后弹出预览窗
+- Cleans Markdown (frontmatter, links, code blocks, tables, etc.) into readable plain text
+- System share → clipboard fallback → preview modal
 
-### TTS 朗读
+### TTS read aloud
 
-- 调用云端 TTS API 朗读笔记或选中文本
-- 长文本按目标字数均衡分组，支持预生成后续音频，请求启动至少间隔 1 秒
-- 播放控制栏：暂停/恢复、上一段/下一段、进度条、倍速切换（0.75x~2.0x）
-- IndexedDB 音频缓存，避免重复 API 调用
-- 保存音频到 vault（WAV 格式）
+- Synthesizes speech from the cloud TTS API for the current note or selected text
+- Long text is split into balanced segments; subsequent segments are prefetched with at least 1s between request starts
+- Playback controls: pause/resume, previous/next segment, progress slider, speed toggle (0.75x–2.0x)
+- IndexedDB audio cache to avoid redundant API calls
+- Save audio to vault (WAV)
 
-## 命令
+## Commands
 
-### 分享/复制
+### Share / Copy
 
-| 命令 | 说明 |
-|------|------|
-| Share cleaned current note | 分享当前笔记 |
-| Copy cleaned current note | 复制当前笔记 |
-| Share cleaned selected text | 分享选中文本 |
-| Copy cleaned selected text | 复制选中文本 |
+| Command | Description |
+|---------|-------------|
+| Share cleaned current note | Share the current note via system share sheet |
+| Copy cleaned current note | Copy cleaned note text to clipboard |
+| Share cleaned selected text | Share selected text via system share sheet |
+| Copy cleaned selected text | Copy cleaned selected text to clipboard |
 
-### TTS 朗读
+### TTS read aloud
 
-| 命令 | 说明 |
-|------|------|
-| Read note aloud | 朗读整篇笔记 |
-| Read selection aloud | 朗读选中文本 |
-| Stop reading | 停止播放 |
-| Pause/Resume reading | 暂停/恢复 |
-| Save current TTS audio to vault | 保存音频到 vault |
-| Clear TTS audio cache | 清空缓存 |
+| Command | Description |
+|---------|-------------|
+| Read note aloud | Read the entire current note |
+| Read selection aloud | Read the selected text |
+| Stop reading | Stop playback |
+| Pause/Resume reading | Pause or resume playback |
+| Save current TTS audio to vault | Export current audio to a WAV file in your vault |
+| Clear TTS audio cache | Clear all cached audio |
 
-## 设置
+## Settings
 
-在 Obsidian Settings → Community plugins → Share & Read Aloud 中配置：
+Configure under Obsidian Settings → Community plugins → Share & Read Aloud:
 
-- **API Key** — MiMo 平台 API Key（从 [platform.xiaomimimo.com](https://platform.xiaomimimo.com) 获取）
-- **Model** — TTS 模型（预置音色 / 音色设计 / 音色克隆）
-- **Voice** — 预置音色选择（冰糖/茉莉/苏打/白桦/Mia/Chloe 等）
-- **Style Instruction** — 风格指令（如"用温柔平稳的语调朗读"）
-- **Playback Speed** — 默认播放倍速
-- **Target Segment Characters** — 每组朗读目标字数，建议 300~500
-- **Concurrent Prefetch Groups** — 预生成组数，默认 4；API 请求启动至少间隔 1 秒
-- **Cache** — 缓存开关和过期天数
-- **UI** — 播放控制栏、Toast 通知开关
+- **API key** — MiMo platform API key (get one at [platform.xiaomimimo.com](https://platform.xiaomimimo.com))
+- **Model** — TTS model (preset voice / voice design / voice clone)
+- **Voice** — Preset voice selection (Bingtang, Moli, Suda, Baihua, Mia, Chloe, etc.)
+- **Style instruction** — Style directive (e.g., "read gently and steadily")
+- **Default playback speed** — Initial playback speed
+- **Target segment characters** — Target character count per group (recommended: 300–500)
+- **Concurrent prefetch groups** — Number of segments to prefetch (default: 4; requests spaced ≥1s apart)
+- **Cache** — Cache toggle and expiry days
+- **UI** — Player bar and toast notification toggles
 
-## 安装
+## Installation
 
-### 手动安装
+### Community plugins
 
-复制以下文件到 `.obsidian/plugins/share-clean-text/`：
+In Obsidian, go to Settings → Community plugins and search for **Share & Read Aloud**, then click Install.
+
+### Manual
+
+Copy these files into `.obsidian/plugins/share-and-read-aloud/`:
 
 - `manifest.json`
 - `main.js`
 - `styles.css`
-- `versions.json`
 
-### 开发构建
+### Development
 
 ```bash
-pnpm install
-pnpm run build
+npm install
+npm run build
 ```
 
-## 目录结构
+## Project structure
 
 ```text
-obsidian-share-clean-text/
+obsidian-share-and-read-aloud/
 ├── src/
-│   ├── main.ts              # 插件入口 + 命令注册
-│   ├── settings.ts          # 设置接口 + 设置页面
-│   ├── constants.ts         # API 配置、音色预设
-│   ├── normalize.ts         # Markdown 文本清洗
-│   ├── tts-client.ts        # MiMo TTS API 客户端
-│   ├── text-segmenter.ts    # 长文本分段
-│   ├── audio-player.ts      # 音频播放引擎
-│   ├── audio-cache.ts       # IndexedDB 缓存
-│   ├── player-bar.ts        # 播放控制栏 UI
+│   ├── main.ts              # Plugin entry + command registration
+│   ├── settings.ts          # Settings interface + settings tab
+│   ├── constants.ts         # API config, voice presets
+│   ├── normalize.ts         # Markdown text cleaning
+│   ├── tts-client.ts        # MiMo TTS API client
+│   ├── text-segmenter.ts    # Long text segmentation
+│   ├── audio-player.ts      # Audio playback engine
+│   ├── audio-cache.ts       # IndexedDB cache
+│   ├── player-bar.ts        # Playback control bar UI
 ├── docs/
-│   └── mimo-tts-api.md      # MiMo TTS API 文档
+│   └── mimo-tts-api.md      # MiMo TTS API documentation
 ├── esbuild.config.mjs
+├── eslint.config.mjs
 ├── styles.css
 ├── manifest.json
 ├── package.json
@@ -95,26 +101,29 @@ obsidian-share-clean-text/
 └── versions.json
 ```
 
-## MiMo TTS 预置音色
+## MiMo TTS preset voices
 
-| 音色 | ID | 语言 | 性别 |
-|------|-----|------|------|
-| 冰糖 | `冰糖` | 中文 | 女 |
-| 茉莉 | `茉莉` | 中文 | 女 |
-| 苏打 | `苏打` | 中文 | 男 |
-| 白桦 | `白桦` | 中文 | 男 |
-| Mia | `Mia` | 英文 | 女 |
-| Chloe | `Chloe` | 英文 | 女 |
-| Milo | `Milo` | 英文 | 男 |
-| Dean | `Dean` | 英文 | 男 |
+| Voice | ID | Language | Gender |
+|-------|-----|----------|--------|
+| Bingtang | `冰糖` | Chinese | Female |
+| Moli | `茉莉` | Chinese | Female |
+| Suda | `苏打` | Chinese | Male |
+| Baihua | `白桦` | Chinese | Male |
+| Mia | `Mia` | English | Female |
+| Chloe | `Chloe` | English | Female |
+| Milo | `Milo` | English | Male |
+| Dean | `Dean` | English | Male |
 
-## 风格控制
+## Style control
 
-支持音频标签控制，在文本中加入风格标记：
+Supports audio style tags in the text:
 
-- `(开心)今天天气真好！`
-- `(慵懒)再让我睡五分钟……`
-- `(磁性)夜已经深了，城市还在呼吸。`
-- `(东北话)哎呀妈呀，这天儿也忒冷了吧！`
+- `(Happy)What a beautiful day!`
+- `(Lazy)Let me sleep five more minutes…`
+- `(Deep)The night has fallen, but the city breathes on.`
 
-也支持自然语言指令，在设置页的 Style Instruction 中填写即可。
+Natural language style instructions are also supported — fill in the Style instruction field in settings.
+
+## License
+
+[MIT](./LICENSE)

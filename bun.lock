@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "obsidian-share-clean-text",
+      "name": "obsidian-share-and-read-aloud",
       "devDependencies": {
         "@types/node": "^24.0.15",
         "builtin-modules": "3.3.0",
