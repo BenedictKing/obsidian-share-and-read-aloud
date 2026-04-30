@@ -1,7 +1,7 @@
 {
   "id": "share-and-read-aloud",
   "name": "Share & Read Aloud",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "minAppVersion": "1.7.0",
   "description": "Clean Markdown into readable text. Share, copy, or read aloud with TTS.",
   "author": "BenedictKing",
