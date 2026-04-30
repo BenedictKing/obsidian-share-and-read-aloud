@@ -28,7 +28,7 @@ context: fork
 - 无参数或 `patch`: patch 版本 +1
 - `minor`: minor 版本 +1，patch 归零
 - `major`: major 版本 +1，minor 和 patch 归零
-- 具体版本号（如 `0.2.0`、`v0.2.0`）: 直接使用该版本号（文件中写入不带 `v` 的 semver）
+- 具体版本号（如 `0.2.0`）: 直接使用该版本号（纯 semver，不接受带 `v` 前缀）
 
 ## 重要原则
 
@@ -136,7 +136,7 @@ node -e "console.log(require('./manifest.json').minAppVersion)"
 规则：
 
 - 文件中使用不带 `v` 的 semver，例如 `0.2.0`
-- git tag（如果用户明确要求）使用 `v0.2.0`
+- git tag（如果用户明确要求）使用 `0.2.0`
 
 ### 4. 更新版本文件
 
@@ -226,14 +226,14 @@ git commit -m "chore: bump version to {newVersion}"
 如果用户明确要求 tag：
 
 ```bash
-git tag v{newVersion}
+git tag {newVersion}
 ```
 
 如果用户明确要求 push：
 
 ```bash
 git push origin main
-git push origin v{newVersion}
+git push origin {newVersion}
 ```
 
 执行 push/tag 前必须再次确认，因为这是影响远端共享状态的操作。
