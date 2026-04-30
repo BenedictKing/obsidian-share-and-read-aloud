@@ -4,7 +4,6 @@ import type { PlayerState } from "./audio-player";
 
 export interface PlayerBarCallbacks {
   onPlayPause: () => void;
-  onStop: () => void;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -23,7 +22,6 @@ export class PlayerBar {
 
   // UI element references
   private playPauseBtn: HTMLButtonElement | null = null;
-  private stopBtn: HTMLButtonElement | null = null;
   private closeBtn: HTMLButtonElement | null = null;
   private prevBtn: HTMLButtonElement | null = null;
   private nextBtn: HTMLButtonElement | null = null;
@@ -54,7 +52,6 @@ export class PlayerBar {
     this.rootEl?.remove();
     this.rootEl = null;
     this.playPauseBtn = null;
-    this.stopBtn = null;
     this.closeBtn = null;
     this.prevBtn = null;
     this.nextBtn = null;
@@ -128,9 +125,6 @@ export class PlayerBar {
       "mimo-tts-btn mimo-tts-btn-play"
     );
     this.playPauseBtn.onclick = () => this.callbacks.onPlayPause();
-
-    this.stopBtn = this.createIconButton(controlsRow, "square", "Stop reading");
-    this.stopBtn.onclick = () => this.callbacks.onStop();
 
     this.nextBtn = this.createIconButton(controlsRow, "skip-forward", "Next segment");
     this.nextBtn.onclick = () => this.callbacks.onNext();

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+- 播放控制栏移除冗余的停止按钮，退出朗读统一由关闭按钮负责。
+
 ## [0.2.6] - 2026-04-30
 
 ### Fixed

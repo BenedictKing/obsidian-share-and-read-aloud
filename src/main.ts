@@ -350,7 +350,6 @@ export default class ShareCleanTextPlugin extends Plugin {
 
     this.playerBar = new PlayerBar(appContainer, {
       onPlayPause: () => this.audioPlayer.togglePause(),
-      onStop: () => this.exitReading(),
       onClose: () => this.exitReading(),
       onPrev: () => void this.audioPlayer.prevSegment(),
       onNext: () => void this.audioPlayer.nextSegment(),
