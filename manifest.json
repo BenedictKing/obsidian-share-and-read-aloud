@@ -1,9 +1,9 @@
 {
   "id": "share-clean-text",
-  "name": "Share Clean Text",
+  "name": "Share & Read Aloud",
   "version": "0.2.2",
   "minAppVersion": "1.7.0",
-  "description": "Clean Markdown into readable text. Share/copy or read aloud with MiMo TTS.",
+  "description": "Clean Markdown into readable text. Share, copy, or read aloud with TTS.",
   "author": "Claude Code",
   "isDesktopOnly": false
 }

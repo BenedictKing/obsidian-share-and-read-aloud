@@ -21,7 +21,7 @@ import {
   MimoTtsSettingTab,
 } from "./settings";
 
-const PLUGIN_NAME = "Share Clean Text";
+const PLUGIN_NAME = "Share & Read Aloud";
 
 class TextPreviewModal extends Modal {
   private readonly text: string;
@@ -163,7 +163,7 @@ export default class ShareCleanTextPlugin extends Plugin {
     // --- TTS commands ---
     this.addCommand({
       id: "read-note-aloud",
-      name: "Read note aloud (MiMo TTS)",
+      name: "Read note aloud",
       callback: async () => {
         await this.readCurrentNote();
       },

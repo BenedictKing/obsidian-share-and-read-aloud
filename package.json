@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-share-clean-text",
+  "name": "obsidian-share-and-read-aloud",
   "version": "0.2.2",
-  "description": "Clean Markdown into readable text. Share/copy or read aloud with MiMo TTS.",
+  "description": "Clean Markdown into readable text. Share, copy, or read aloud with TTS.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",

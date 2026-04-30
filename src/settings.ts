@@ -62,7 +62,7 @@ export class MimoTtsSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Share Clean Text & MiMo TTS" });
+    containerEl.createEl("h2", { text: "Share & Read Aloud" });
 
     this.renderApiSection(containerEl);
     this.renderVoiceSection(containerEl);

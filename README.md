@@ -1,6 +1,6 @@
-# Share Clean Text & MiMo TTS
+# Share & Read Aloud
 
-Obsidian 插件：将笔记清洗为纯文本后分享/复制，或直接通过 MiMo TTS 朗读。
+Obsidian 插件：将笔记清洗为纯文本后分享/复制，或通过 TTS 朗读。
 
 ## 功能
 
@@ -9,9 +9,9 @@ Obsidian 插件：将笔记清洗为纯文本后分享/复制，或直接通过 
 - 清洗 Markdown（frontmatter、链接、代码块、表格等）为可读纯文本
 - 优先调用系统分享 → 回退剪贴板 → 最后弹出预览窗
 
-### MiMo TTS 朗读
+### TTS 朗读
 
-- 调用 MiMo-V2.5-TTS 云端 API 朗读笔记或选中文本
+- 调用云端 TTS API 朗读笔记或选中文本
 - 长文本按目标字数均衡分组，支持预生成后续音频，请求启动至少间隔 1 秒
 - 播放控制栏：暂停/恢复、上一段/下一段、进度条、倍速切换（0.75x~2.0x）
 - IndexedDB 音频缓存，避免重复 API 调用
@@ -32,7 +32,7 @@ Obsidian 插件：将笔记清洗为纯文本后分享/复制，或直接通过 
 
 | 命令 | 说明 |
 |------|------|
-| Read note aloud (MiMo TTS) | 朗读整篇笔记 |
+| Read note aloud | 朗读整篇笔记 |
 | Read selection aloud | 朗读选中文本 |
 | Stop reading | 停止播放 |
 | Pause/Resume reading | 暂停/恢复 |
@@ -41,7 +41,7 @@ Obsidian 插件：将笔记清洗为纯文本后分享/复制，或直接通过 
 
 ## 设置
 
-在 Obsidian Settings → Community plugins → Share Clean Text 中配置：
+在 Obsidian Settings → Community plugins → Share & Read Aloud 中配置：
 
 - **API Key** — MiMo 平台 API Key（从 [platform.xiaomimimo.com](https://platform.xiaomimimo.com) 获取）
 - **Model** — TTS 模型（预置音色 / 音色设计 / 音色克隆）
