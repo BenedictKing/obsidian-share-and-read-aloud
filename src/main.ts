@@ -89,6 +89,10 @@ export default class ShareCleanTextPlugin extends Plugin {
       void this.shareCurrentNote();
     });
 
+    this.addRibbonIcon("audio-lines", "Read note aloud", () => {
+      void this.readCurrentNote();
+    });
+
     this.addCommand({
       id: "share-cleaned-current-note",
       name: "Share cleaned current note",
