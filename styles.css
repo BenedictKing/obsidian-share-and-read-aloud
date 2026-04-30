@@ -26,12 +26,23 @@
   border: none;
   cursor: pointer;
   font-size: 16px;
-  padding: 4px 6px;
+  padding: 0;
   border-radius: 4px;
   color: var(--text-normal);
   line-height: 1;
+  width: 28px;
+  height: 28px;
   min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   text-align: center;
+}
+
+.mimo-tts-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .mimo-tts-btn:hover {
@@ -40,6 +51,11 @@
 
 .mimo-tts-btn-play {
   font-size: 18px;
+}
+
+.mimo-tts-btn-play svg {
+  width: 18px;
+  height: 18px;
 }
 
 .mimo-tts-btn-speed {
@@ -51,6 +67,10 @@
 
 .mimo-tts-btn-speed:hover {
   color: var(--text-normal);
+}
+
+.mimo-tts-btn-close {
+  color: var(--text-muted);
 }
 
 .mimo-tts-separator {

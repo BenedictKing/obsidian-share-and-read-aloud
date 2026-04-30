@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.2.6] - 2026-04-30
+
+### Fixed
+
+- 朗读控制栏新增退出按钮，停止朗读时同步隐藏控制栏，避免停留在朗读状态。
+
 ## [0.2.3] - 2026-04-30
 
 ### Added

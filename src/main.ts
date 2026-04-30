@@ -186,10 +186,10 @@ export default class ShareCleanTextPlugin extends Plugin {
       id: "stop-reading",
       name: "Stop reading",
       checkCallback: (checking) => {
-        const isActive = this.audioPlayer.getState() !== "idle";
+        const isActive = this.isReadingActive();
         if (!isActive) return false;
         if (!checking) {
-          this.audioPlayer.stop();
+          this.exitReading();
         }
         return true;
       },
@@ -213,7 +213,7 @@ export default class ShareCleanTextPlugin extends Plugin {
       id: "save-audio-to-vault",
       name: "Save current tts audio to vault",
       checkCallback: (checking) => {
-        const isActive = this.audioPlayer.getState() !== "idle";
+        const isActive = this.isReadingActive();
         if (!isActive) return false;
         if (!checking) {
           void this.saveAudioToVault();
@@ -350,7 +350,8 @@ export default class ShareCleanTextPlugin extends Plugin {
 
     this.playerBar = new PlayerBar(appContainer, {
       onPlayPause: () => this.audioPlayer.togglePause(),
-      onStop: () => this.audioPlayer.stop(),
+      onStop: () => this.exitReading(),
+      onClose: () => this.exitReading(),
       onPrev: () => void this.audioPlayer.prevSegment(),
       onNext: () => void this.audioPlayer.nextSegment(),
       onSpeedChange: (speed) => {
@@ -366,20 +367,20 @@ export default class ShareCleanTextPlugin extends Plugin {
   private async seekToSegment(index: number): Promise<void> {
     const state = this.audioPlayer.getState();
     if (state === "idle" || state === "stopped") return;
+    if (this.currentSegments.length === 0) return;
 
-    // Stop current and re-start from the target segment (full list, with offset)
-    this.audioPlayer.stop();
-
-    if (this.currentSegments.length > 0) {
-      if (this.settings.showPlayerBar) {
-        this.playerBar.show();
-      }
-      await this.audioPlayer.play(this.currentSegments, index);
+    if (this.settings.showPlayerBar) {
+      this.playerBar.show();
     }
+    await this.audioPlayer.play(this.currentSegments, index);
   }
 
   private handlePlayerStateChange(state: PlayerState): void {
     if (this.settings.showPlayerBar && this.playerBar) {
+      if (state === "stopped") {
+        this.playerBar.hide();
+        return;
+      }
       this.playerBar.updateState(state);
     }
   }
@@ -411,6 +412,17 @@ export default class ShareCleanTextPlugin extends Plugin {
         this.playerBar?.hide();
       }
     }, 2000);
+  }
+
+  private exitReading(): void {
+    this.audioPlayer.stop();
+    this.currentSegments = [];
+    this.playerBar?.hide();
+  }
+
+  private isReadingActive(): boolean {
+    const state = this.audioPlayer.getState();
+    return state === "playing" || state === "paused";
   }
 
   private async saveAudioToVault(): Promise<void> {

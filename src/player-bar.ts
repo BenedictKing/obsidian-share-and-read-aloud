@@ -1,9 +1,11 @@
+import { setIcon } from "obsidian";
 import { PLAYBACK_SPEEDS, type PlaybackSpeed } from "./constants";
 import type { PlayerState } from "./audio-player";
 
 export interface PlayerBarCallbacks {
   onPlayPause: () => void;
   onStop: () => void;
+  onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
   onSpeedChange: (speed: PlaybackSpeed) => void;
@@ -22,6 +24,7 @@ export class PlayerBar {
   // UI element references
   private playPauseBtn: HTMLButtonElement | null = null;
   private stopBtn: HTMLButtonElement | null = null;
+  private closeBtn: HTMLButtonElement | null = null;
   private prevBtn: HTMLButtonElement | null = null;
   private nextBtn: HTMLButtonElement | null = null;
   private segmentLabel: HTMLElement | null = null;
@@ -51,6 +54,14 @@ export class PlayerBar {
     this.rootEl?.remove();
     this.rootEl = null;
     this.playPauseBtn = null;
+    this.stopBtn = null;
+    this.closeBtn = null;
+    this.prevBtn = null;
+    this.nextBtn = null;
+    this.segmentLabel = null;
+    this.progressSlider = null;
+    this.speedBtn = null;
+    this.textPreview = null;
   }
 
   updateState(state: PlayerState): void {
@@ -58,16 +69,16 @@ export class PlayerBar {
 
     switch (state) {
       case "playing":
-        this.playPauseBtn.textContent = "⏸";
+        this.setButtonIcon(this.playPauseBtn, "pause");
         this.playPauseBtn.setAttribute("aria-label", "Pause");
         break;
       case "paused":
-        this.playPauseBtn.textContent = "▶";
+        this.setButtonIcon(this.playPauseBtn, "play");
         this.playPauseBtn.setAttribute("aria-label", "Resume");
         break;
       case "idle":
       case "stopped":
-        this.playPauseBtn.textContent = "▶";
+        this.setButtonIcon(this.playPauseBtn, "play");
         this.playPauseBtn.setAttribute("aria-label", "Play");
         break;
     }
@@ -107,32 +118,21 @@ export class PlayerBar {
     // Row 1: Controls
     const controlsRow = this.rootEl.createDiv("mimo-tts-controls");
 
-    this.prevBtn = controlsRow.createEl("button", {
-      text: "⏮",
-      cls: "mimo-tts-btn",
-    });
-    this.prevBtn.setAttribute("aria-label", "Previous segment");
+    this.prevBtn = this.createIconButton(controlsRow, "skip-back", "Previous segment");
     this.prevBtn.onclick = () => this.callbacks.onPrev();
 
-    this.playPauseBtn = controlsRow.createEl("button", {
-      text: "⏸",
-      cls: "mimo-tts-btn mimo-tts-btn-play",
-    });
-    this.playPauseBtn.setAttribute("aria-label", "Pause");
+    this.playPauseBtn = this.createIconButton(
+      controlsRow,
+      "pause",
+      "Pause",
+      "mimo-tts-btn mimo-tts-btn-play"
+    );
     this.playPauseBtn.onclick = () => this.callbacks.onPlayPause();
 
-    this.stopBtn = controlsRow.createEl("button", {
-      text: "⏹",
-      cls: "mimo-tts-btn",
-    });
-    this.stopBtn.setAttribute("aria-label", "Stop");
+    this.stopBtn = this.createIconButton(controlsRow, "square", "Stop reading");
     this.stopBtn.onclick = () => this.callbacks.onStop();
 
-    this.nextBtn = controlsRow.createEl("button", {
-      text: "⏭",
-      cls: "mimo-tts-btn",
-    });
-    this.nextBtn.setAttribute("aria-label", "Next segment");
+    this.nextBtn = this.createIconButton(controlsRow, "skip-forward", "Next segment");
     this.nextBtn.onclick = () => this.callbacks.onNext();
 
     // Separator
@@ -171,9 +171,38 @@ export class PlayerBar {
     this.speedBtn.setAttribute("aria-label", "Change playback speed");
     this.speedBtn.onclick = () => this.cycleSpeed();
 
+    // Separator
+    controlsRow.createSpan({ text: "│", cls: "mimo-tts-separator" });
+
+    this.closeBtn = this.createIconButton(
+      controlsRow,
+      "x",
+      "Exit reading",
+      "mimo-tts-btn mimo-tts-btn-close"
+    );
+    this.closeBtn.onclick = () => this.callbacks.onClose();
+
     // Row 2: Text preview
     this.textPreview = this.rootEl.createDiv("mimo-tts-text-preview");
     this.textPreview.textContent = "";
+  }
+
+  private createIconButton(
+    parent: HTMLElement,
+    icon: string,
+    label: string,
+    cls = "mimo-tts-btn"
+  ): HTMLButtonElement {
+    const button = parent.createEl("button", { cls });
+    button.type = "button";
+    button.setAttribute("aria-label", label);
+    this.setButtonIcon(button, icon);
+    return button;
+  }
+
+  private setButtonIcon(button: HTMLButtonElement, icon: string): void {
+    button.empty();
+    setIcon(button, icon);
   }
 
   private cycleSpeed(): void {
