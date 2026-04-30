@@ -1,6 +1,6 @@
 {
   "name": "obsidian-share-and-read-aloud",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Clean Markdown into readable text. Share, copy, or read aloud with TTS.",
   "main": "main.js",
   "scripts": {
